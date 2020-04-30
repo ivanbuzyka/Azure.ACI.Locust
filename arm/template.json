@@ -1,0 +1,223 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "containerGroupMasterName": {
+            "defaultValue": "loadtesting-master",
+            "type": "String"
+        },
+        "containerGroupSlaveName": {
+            "defaultValue": "loadtesting-slave",
+            "type": "String"
+        },
+        "frontendPort": {
+            "defaultValue": 8089,
+            "type": "int"
+        },
+        "masterSlavePort": {
+            "defaultValue": 5557,
+            "type": "int"
+        },
+        "urlToTest": {            
+            "type": "string"
+        },
+        "locustFilePath": {
+            "defaultValue": "/mnt/locust/simple-load.py",
+            "type": "string"
+        },
+        "mountPath": {
+            "defaultValue": "/mnt/locust",
+            "type": "string"
+        },
+        "shareStorageAccountName": {
+            "type": "string"
+        },
+        "shareStorageAccountKey": {
+            "type": "string"
+        },
+        "fileShareName": {
+            "type": "string"
+        },
+        "locustImageName": {
+            "defaultValue": "locustio/locust",
+            "type": "string"
+        },
+        "slavesCount": {
+            "defaultValue": 3,
+            "type": "int"
+        }
+    },
+    "variables": {
+        "masterDnsNameLabel": "[concat(uniqueString(resourceGroup().id), '-master')]",
+        "slaveDnsNameLabel": "[concat(uniqueString(resourceGroup().id), '-slave')]",
+        "masterHostName": "[concat(variables('masterDnsNameLabel'), '.westeurope.azurecontainer.io')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2018-10-01",
+            "name": "[parameters('containerGroupMasterName')]",
+            "location": "westeurope",
+            "properties": {
+                "containers": [
+                    {
+                        "name": "[concat(parameters('containerGroupMasterName'), '-container1')]",
+                        "properties": {
+                            "image": "[parameters('locustImageName')]",
+                            "ports": [
+                                {
+                                    "protocol": "TCP",
+                                    "port": "[parameters('frontendPort')]"
+                                },
+                                {
+                                    "protocol": "TCP",
+                                    "port": "[parameters('masterSlavePort')]"
+                                }
+                            ],
+                            "environmentVariables": [
+                                {
+                                    "name": "LOCUSTFILE_PATH",
+                                    "value": "[parameters('locustFilePath')]"
+                                },
+                                {
+                                    "name": "TARGET_URL",
+                                    "value": "[parameters('urlToTest')]"
+                                },
+                                {
+                                    "name": "LOCUST_MODE",
+                                    "value": "master"
+                                }
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "memoryInGB": 1.5,
+                                    "cpu": 1
+                                }
+                            },
+                            "volumeMounts": [
+                                {
+                                    "name": "configfiles",
+                                    "mountPath": "[parameters('mountPath')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "restartPolicy": "OnFailure",
+                "osType": "Linux",
+                "ipAddress": {
+                    "ports": [
+                         {
+                            "protocol": "TCP",
+                            "port": "[parameters('frontendPort')]"
+                        },
+                        {
+                            "protocol": "TCP",
+                            "port": "[parameters('masterSlavePort')]"
+                        }
+                    ],
+                    "type": "Public",
+                    "dnsNameLabel": "[variables('masterDnsNameLabel')]"
+                },
+                "volumes": [
+                    {
+                        "name": "configfiles",
+                        "azureFile": {
+                            "shareName": "[parameters('fileShareName')]",
+                            "storageAccountName": "[parameters('shareStorageAccountName')]",
+                            "storageAccountKey": "[parameters('shareStorageAccountKey')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2018-10-01",
+            "name": "[concat(parameters('containerGroupSlaveName'), copyIndex())]",
+            "location": "westeurope",
+            "properties": {
+                "containers": [
+                    {
+                        "name": "[concat(parameters('containerGroupSlaveName'), '-container1')]",
+                        "properties": {
+                            "image": "locustio/locust",
+                            "ports": [
+                                {
+                                    "protocol": "TCP",
+                                    "port": "[parameters('frontendPort')]"
+                                },
+                                {
+                                    "protocol": "TCP",
+                                    "port": "[parameters('masterSlavePort')]"
+                                }
+                            ],
+                            "environmentVariables": [
+                                {
+                                    "name": "LOCUSTFILE_PATH",
+                                    "value": "[parameters('locustFilePath')]"
+                                },
+                                {
+                                    "name": "TARGET_URL",
+                                    "value": "[parameters('urlToTest')]"
+                                },
+                                {
+                                    "name": "LOCUST_MODE",
+                                    "value": "slave"
+                                },
+                                {
+                                    "name": "LOCUST_MASTER_HOST",
+                                    "value": "[variables('masterHostName')]"
+
+                                }
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "memoryInGB": 1.5,
+                                    "cpu": 1
+                                }
+                            },
+                            "volumeMounts": [
+                                {
+                                    "name": "configfiles",
+                                    "mountPath": "[parameters('mountPath')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "restartPolicy": "OnFailure",
+                "osType": "Linux",
+                "ipAddress": {
+                    "ports": [
+                        {
+                            "protocol": "TCP",
+                            "port": "[parameters('frontendPort')]"
+                        },
+                        {
+                            "protocol": "TCP",
+                            "port": "[parameters('masterSlavePort')]"
+                        }
+                    ],
+                    "type": "Public",
+                    "dnsNameLabel": "[concat(variables('slaveDnsNameLabel'), copyIndex())]"
+                },
+                "volumes": [
+                    {
+                        "name": "configfiles",
+                        "azureFile": {
+                            "shareName": "[parameters('fileShareName')]",
+                            "storageAccountName": "[parameters('shareStorageAccountName')]",
+                            "storageAccountKey": "[parameters('shareStorageAccountKey')]"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "locustslaves",
+                "mode": "Parallel",
+                "count": "[parameters('slavesCount')]"
+            }
+        }
+    ]
+}
