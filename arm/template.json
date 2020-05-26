@@ -63,7 +63,7 @@
                     {
                         "name": "[concat(parameters('containerGroupMasterName'), '-container1')]",
                         "properties": {
-                            "image": "[parameters('locustImageName')]",
+                            "image": "[parameters('locustImageName')]",                          
                             "ports": [
                                 {
                                     "protocol": "TCP",
@@ -76,16 +76,16 @@
                             ],
                             "environmentVariables": [
                                 {
-                                    "name": "LOCUSTFILE_PATH",
+                                    "name": "LOCUST_LOCUSTFILE",
                                     "value": "[parameters('locustFilePath')]"
                                 },
                                 {
-                                    "name": "TARGET_URL",
+                                    "name": "LOCUST_HOST",
                                     "value": "[parameters('urlToTest')]"
                                 },
                                 {
-                                    "name": "LOCUST_MODE",
-                                    "value": "master"
+                                    "name": "LOCUST_MODE_MASTER",
+                                    "value": "true"
                                 }
                             ],
                             "resources": {
@@ -154,19 +154,19 @@
                             ],
                             "environmentVariables": [
                                 {
-                                    "name": "LOCUSTFILE_PATH",
+                                    "name": "LOCUST_LOCUSTFILE",
                                     "value": "[parameters('locustFilePath')]"
                                 },
                                 {
-                                    "name": "TARGET_URL",
+                                    "name": "LOCUST_HOST",
                                     "value": "[parameters('urlToTest')]"
                                 },
                                 {
-                                    "name": "LOCUST_MODE",
-                                    "value": "slave"
+                                    "name": "LOCUST_MODE_WORKER",
+                                    "value": "true"
                                 },
                                 {
-                                    "name": "LOCUST_MASTER_HOST",
+                                    "name": "LOCUST_MASTER_NODE_HOST",
                                     "value": "[variables('masterHostName')]"
 
                                 }
