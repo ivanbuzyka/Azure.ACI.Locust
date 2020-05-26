@@ -1,14 +1,14 @@
-from locust import HttpUser, TaskSet, task, between
+import random
+from locust import HttpUser, task, between
 
-class UserBehaviour(TaskSet):
-    @task(2)
-    def index(self):
-        self.client.get('/')
+class QuickstartUser(HttpUser):
+    wait_time = between(5, 9)
 
-    @task(1)
-    def profile(self):
-        self.client.get('/')
+    @task
+    def index_page(self):
+        self.client.get("/")
 
-class WebsiteUser(HttpUser):
-    task_set = UserBehaviour
-    wait_time = between(2, 5)
+    @task(3)
+    def view_item(self):
+        item_id = random.randint(1, 10000)
+        self.client.get(f"/item?id={item_id}", name="/item")
