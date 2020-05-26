@@ -39,11 +39,11 @@
             "type": "string"
         },
         "locustImageName": {
-            "defaultValue": "locustio/locust",
+            "defaultValue": "ivanbuzyka/custlocust",
             "type": "string"
         },
         "slavesCount": {
-            "defaultValue": 3,
+            "defaultValue": 1,
             "type": "int"
         }
     },
@@ -141,7 +141,7 @@
                     {
                         "name": "[concat(parameters('containerGroupSlaveName'), '-container1')]",
                         "properties": {
-                            "image": "locustio/locust",
+                            "image": "[parameters('locustImageName')]",
                             "ports": [
                                 {
                                     "protocol": "TCP",
