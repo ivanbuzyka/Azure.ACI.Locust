@@ -11,4 +11,4 @@ class QuickstartUser(HttpUser):
     @task(3)
     def view_item(self):
         item_id = random.randint(1, 10000)
-        self.client.get(f"/item?id={item_id}", name="/item")
+        self.client.get(f"/?id={item_id}", name="/?id=somerandomstring")
