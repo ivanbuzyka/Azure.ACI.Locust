@@ -1,8 +1,27 @@
-# Azure.ACI.Locust
+# Azure.ACI.Locust, getting started
 
 ARM template and guides for deployment and running of distributed Locust in Azure Container Instances
 
-## Get started
+## Really simple start
+
+### Fill in parameters
+
+Add parameter values to the `parameters.json` file
+
+### Deploy ARM template
+
+Example for running deployment by Azure CLI:
+
+```bash
+az group deployment create -g ibu-loadtesting --template-file "C:\path-to-repo\Azure.ACI.Locust\arm\ConfigFileIntegrated\template.json" --parameters "C:\path-to-repo\Azure.ACI.Locust\arm\ConfigFileIntegrated\parameters.json"
+```
+
+### Open locust UI
+
+Find Hostname of the Locust master and open it in the browser.
+Open master Container Group in the Azure Portal and copy hostname (`something.westeurope.azurecontainer.io`), open it in browser using port `8089`:
+
+## More complex but flexible start
 
 ### Prerequisites
 
@@ -25,7 +44,7 @@ Add parameter values to the `parameters.json` file
 Example for running deployment by Azure CLI:
 
 ```bash
-az group deployment create -g ibu-loadtesting --template-file "C:\path-to-repo\Azure.ACI.Locust\arm\template.json" --parameters "C:\path-to-repo\Azure.ACI.Locust\arm\parameters.json"
+az group deployment create -g ibu-loadtesting --template-file "C:\path-to-repo\Azure.ACI.Locust\arm\ConfigFileOnMount\template.json" --parameters "C:\path-to-repo\Azure.ACI.Locust\arm\ConfigFileOnMount\parameters.json"
 ```
 
 ### Open locust UI
@@ -42,3 +61,29 @@ Locust has [great documentation](https://docs.locust.io/en/stable/quickstart.htm
 ### Remove container groups when not needed
 
 In order to save money, make sure to remove container groups or stop containers within them.
+
+## If you don't like attaching volumes
+
+### Create your image with your locust script built in
+
+Update it pointing to another Python file with Locust script
+
+```Docker
+FROM locustio/locust
+
+COPY locust/simple-load.py .
+```
+
+Build docker image:
+
+```cmd
+docker build --tag custlocust:0.1 .
+```
+
+Create docker container from that image in order to test:
+
+```cmd
+docker run -p 8089:8089 --env LOCUST_HOST=https://somewebsite.com --env LOCUST_LOCUSTFILE=simple-load.py custlocust:0.1
+```
+
+Push that image to the Docker Hub or any other registry
