@@ -13,7 +13,7 @@ Add parameter values to the `parameters.json` file
 Example for running deployment by Azure CLI:
 
 ```bash
-az group deployment create -g ibu-loadtesting --template-file "C:\path-to-repo\Azure.ACI.Locust\arm\ConfigFileIntegrated\template.json" --parameters "C:\path-to-repo\Azure.ACI.Locust\arm\ConfigFileIntegrated\parameters.json"
+az deployment group create -g ibu-loadtesting --template-file "C:\path-to-repo\Azure.ACI.Locust\arm\ConfigFileIntegrated\template.json" --parameters "C:\path-to-repo\Azure.ACI.Locust\arm\ConfigFileIntegrated\parameters.json"
 ```
 
 ### Open locust UI
