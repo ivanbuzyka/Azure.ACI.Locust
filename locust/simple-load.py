@@ -14,6 +14,10 @@ class QuickstartUser(HttpUser):
         # You can also use hardcoded URL which may be important in scenarios when multisite app is load tested.
         # Second name parametert is important to collect statistic correctly
         # self.client.get("https://sitehostname/", name="https://sitehostname/", verify=False)
+        
+        # in order to clean cookies add following line to the end of last task.
+        # this can be especially important when load testing scale-out process in environments with sticky session (ARR Affinity in Azure)
+        # self.client.cookies.clear()
 
     @task
     def view_item(self):
